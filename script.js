@@ -75,41 +75,7 @@ checkoutForm.addEventListener('submit', async (ev)=>{
     checkoutStatus.textContent = 'Erreur lors de l\'envoi.';
   }
 })
-Étape 2 : modifier Apps Script pour accepter doGet
-Dans ton gsave.gs, la fonction doGet doit déjà exister :
 
-javascript
-Copier le code
-function doGet(e){
-  try{
-    const data = {};
-    for(const key in e.parameter){
-      try{ data[key] = JSON.parse(e.parameter[key]); } catch(err){ data[key] = e.parameter[key]; }
-    }
-    const ss = SpreadsheetApp.openById(SPREADSHEET_ID);
-    let sheet = ss.getSheetByName(SHEET_NAME);
-    if(!sheet) sheet = ss.insertSheet(SHEET_NAME);
-
-    if(sheet.getLastRow()===0){
-      sheet.appendRow(['date','name','email','phone','address','cart_json','total']);
-    }
-
-    const row = [
-      data.date || new Date().toISOString(),
-      data.name,
-      data.email,
-      data.phone,
-      data.address,
-      JSON.stringify(data.cart),
-      data.total
-    ];
-    sheet.appendRow(row);
-
-    return ContentService.createTextOutput('OK').setMimeType(ContentService.MimeType.TEXT);
-  } catch(err){
-    return ContentService.createTextOutput('ERROR:' + err.toString());
-  }
-})
 
 
 
