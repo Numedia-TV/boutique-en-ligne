@@ -1,5 +1,5 @@
-// Remplacez ceci par l'URL du Web App Apps Script (déployé)
-const SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbzf32sjTqtY7MvOXPs3rmVIgSgqe5RDzRcBNbO55pAOTsJFBJC03VRDgFxg12P8trMnOg/exec';
+// Remplacez par l'URL de votre Web App Google Apps Script
+const SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbwIhj7uLHFsQPTaPFNJltFTtDoaKEYN0mQZ6-Zi73Zx7B-6EnNaZ-WHTuQx9H-fCxObLQ/exec';
 
 const PRODUCTS = [
   {id:1,name:'Produit A',price:4500},
@@ -21,10 +21,10 @@ let cart = [];
 function renderProducts(){
   productsEl.innerHTML = '';
   PRODUCTS.forEach(p=>{
-    const card = document.createElement('div');card.className='product';
+    const card = document.createElement('div'); card.className='product';
     card.innerHTML = `<h3>${p.name}</h3><div>Prix: ${p.price} DA</div><button data-id="${p.id}">Ajouter</button>`;
     productsEl.appendChild(card);
-  })
+  });
 }
 
 function renderCart(){
@@ -35,16 +35,29 @@ function renderCart(){
     li.textContent = `${item.name} x ${item.qty} — ${item.qty*item.price} DA`;
     cartItemsEl.appendChild(li);
     total += item.qty*item.price;
-  })
+  });
   cartTotalEl.textContent = `Total: ${total} DA`;
   cartCountEl.textContent = cart.reduce((s,i)=>s+i.qty,0);
 }
 
+productsEl.addEventListener('click', e=>{
+  if(e.target.tagName==='BUTTON'){
+    const id = Number(e.target.dataset.id);
+    const p = PRODUCTS.find(x=>x.id===id);
+    const found = cart.find(x=>x.id===id);
+    if(found) found.qty++;
+    else cart.push({...p,qty:1});
+    renderCart();
+  }
+});
+
+checkoutBtn.addEventListener('click', ()=>{
+  checkoutSection.classList.toggle('hidden');
+});
+
 checkoutForm.addEventListener('submit', async (ev)=>{
   ev.preventDefault();
-  if(cart.length===0){
-    checkoutStatus.textContent = 'Votre panier est vide.'; return;
-  }
+  if(cart.length===0){ checkoutStatus.textContent='Votre panier est vide.'; return; }
 
   const formData = new FormData(checkoutForm);
   const payload = {
@@ -57,27 +70,21 @@ checkoutForm.addEventListener('submit', async (ev)=>{
     date: new Date().toISOString()
   };
 
-  // Convertir payload en query string
   const params = new URLSearchParams();
   for(const key in payload){
     params.append(key, typeof payload[key]==='object'? JSON.stringify(payload[key]) : payload[key]);
   }
 
   try{
-    checkoutStatus.textContent = 'Envoi en cours...';
-    const res = await fetch(`${SCRIPT_URL}?${params.toString()}`, { method:'GET', mode:'no-cors' });
-    checkoutStatus.textContent = 'Commande enregistrée. Merci !';
-    cart = [];
-    renderCart();
-    checkoutForm.reset();
+    checkoutStatus.textContent='Envoi en cours...';
+    await fetch(`${SCRIPT_URL}?${params.toString()}`, {method:'GET', mode:'no-cors'});
+    checkoutStatus.textContent='Commande enregistrée. Merci !';
+    cart=[]; renderCart(); checkoutForm.reset();
   }catch(err){
     console.error(err);
-    checkoutStatus.textContent = 'Erreur lors de l\'envoi.';
+    checkoutStatus.textContent='Erreur lors de l\'envoi.';
   }
-})
-
-
-
+});
 
 renderProducts();
 renderCart();
