@@ -40,26 +40,12 @@ function renderCart(){
   cartCountEl.textContent = cart.reduce((s,i)=>s+i.qty,0);
 }
 
-productsEl.addEventListener('click', e=>{
-  if(e.target.tagName === 'BUTTON'){
-    const id = Number(e.target.dataset.id);
-    const p = PRODUCTS.find(x=>x.id===id);
-    const found = cart.find(x=>x.id===id);
-    if(found) found.qty++;
-    else cart.push({...p,qty:1});
-    renderCart();
-  }
-})
-
-checkoutBtn.addEventListener('click', ()=>{
-  checkoutSection.classList.toggle('hidden');
-})
-
 checkoutForm.addEventListener('submit', async (ev)=>{
   ev.preventDefault();
   if(cart.length===0){
-    checkoutStatus.textContent = 'Votre panier est vide.';return;
+    checkoutStatus.textContent = 'Votre panier est vide.'; return;
   }
+
   const formData = new FormData(checkoutForm);
   const payload = {
     name: formData.get('name'),
@@ -71,14 +57,15 @@ checkoutForm.addEventListener('submit', async (ev)=>{
     date: new Date().toISOString()
   };
 
+  // Convertir payload en query string
+  const params = new URLSearchParams();
+  for(const key in payload){
+    params.append(key, typeof payload[key]==='object'? JSON.stringify(payload[key]) : payload[key]);
+  }
+
   try{
     checkoutStatus.textContent = 'Envoi en cours...';
-    const res = await fetch(SCRIPT_URL, {
-      method: 'POST',
-      body: JSON.stringify(payload),
-      headers: {'Content-Type':'application/json'}
-    });
-    const txt = await res.text();
+    const res = await fetch(`${SCRIPT_URL}?${params.toString()}`, { method:'GET', mode:'no-cors' });
     checkoutStatus.textContent = 'Commande enregistrée. Merci !';
     cart = [];
     renderCart();
@@ -88,6 +75,43 @@ checkoutForm.addEventListener('submit', async (ev)=>{
     checkoutStatus.textContent = 'Erreur lors de l\'envoi.';
   }
 })
+Étape 2 : modifier Apps Script pour accepter doGet
+Dans ton gsave.gs, la fonction doGet doit déjà exister :
+
+javascript
+Copier le code
+function doGet(e){
+  try{
+    const data = {};
+    for(const key in e.parameter){
+      try{ data[key] = JSON.parse(e.parameter[key]); } catch(err){ data[key] = e.parameter[key]; }
+    }
+    const ss = SpreadsheetApp.openById(SPREADSHEET_ID);
+    let sheet = ss.getSheetByName(SHEET_NAME);
+    if(!sheet) sheet = ss.insertSheet(SHEET_NAME);
+
+    if(sheet.getLastRow()===0){
+      sheet.appendRow(['date','name','email','phone','address','cart_json','total']);
+    }
+
+    const row = [
+      data.date || new Date().toISOString(),
+      data.name,
+      data.email,
+      data.phone,
+      data.address,
+      JSON.stringify(data.cart),
+      data.total
+    ];
+    sheet.appendRow(row);
+
+    return ContentService.createTextOutput('OK').setMimeType(ContentService.MimeType.TEXT);
+  } catch(err){
+    return ContentService.createTextOutput('ERROR:' + err.toString());
+  }
+})
+
+
 
 renderProducts();
 renderCart();
