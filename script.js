@@ -1,5 +1,5 @@
 // Remplacez ceci par l'URL du Web App Apps Script (déployé)
-const SCRIPT_URL = 'SCRIPT_URL_PLACEHOLDER';
+const SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbxKvrdFAZ5B579IEv6dkCsSyYCbIATmhayhdCNnfBrGsWE6uTWvz7iNEo5fuxCkbPXKUA/exec';
 
 const PRODUCTS = [
   {id:1,name:'Produit A',price:4500},
