@@ -1,56 +1,112 @@
-<!-- Exemple de Formulaire HTML -->
-<form id="formCommande">
-  <input type="text" id="nom" placeholder="Votre nom" required />
-  <input type="tel" id="telephone" placeholder="Numéro de téléphone" required />
-  <input type="text" id="adresse" placeholder="Adresse de livraison" required />
-
-  <!-- Bouton d'envoi -->
-  <button type="button" onclick="envoyerCommande()">Commander maintenant</button>
-</form>
-
-<!-- Code JavaScript -->
-<script>
-  // 1. Mettez votre lien Google Web App ici :
-  const SCRIPT_URL = "https://script.google.com/macros/s/VOTRE_ID_DEPLOIEMENT/exec";
-
-  function envoyerCommande() {
-    // Récupération des valeurs saisies par l'utilisateur
-    const nomClient = document.getElementById("nom").value;
-    const telClient = document.getElementById("telephone").value;
-    const adresseClient = document.getElementById("adresse").value;
-
-    // Vérification simple que les champs ne sont pas vides
-    if (!nomClient || !telClient || !adresseClient) {
-      alert("Veuillez remplir tous les champs !");
-      return;
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Formulaire de Commande</title>
+  <style>
+    .form-container {
+      max-width: 400px;
+      margin: 20px auto;
+      padding: 20px;
+      border: 1px solid #ccc;
+      border-radius: 8px;
+      font-family: Arial, sans-serif;
     }
+    .form-group {
+      margin-bottom: 15px;
+    }
+    .form-group label {
+      display: block;
+      margin-bottom: 5px;
+      font-weight: bold;
+    }
+    .form-group input {
+      width: 100%;
+      padding: 8px;
+      box-sizing: border-box;
+      border: 1px solid #ccc;
+      border-radius: 4px;
+    }
+    .btn-submit {
+      width: 100%;
+      padding: 10px;
+      background-color: #000;
+      color: #fff;
+      border: none;
+      border-radius: 4px;
+      font-size: 16px;
+      cursor: pointer;
+    }
+    .btn-submit:hover {
+      background-color: #333;
+    }
+  </style>
+</head>
+<body>
 
-    // Objet avec les données à envoyer
-    const commande = {
-      nom: nomClient,
-      telephone: telClient,
-      adresse: adresseClient,
-      produit: "Nom du produit", // Adaptez selon le produit sélectionné
-      prix: "2500 DA"            // Adaptez selon le prix du produit
-    };
+  <div class="form-container">
+    <h2>Valider votre commande</h2>
+    <form id="formCommande">
+      <div class="form-group">
+        <label for="nom">Nom complet :</label>
+        <input type="text" id="nom" placeholder="Votre nom" required>
+      </div>
 
-    // Envoi des données vers Google Sheets via Apps Script
-    fetch(SCRIPT_URL, {
-      method: "POST",
-      mode: "no-cors",
-      headers: {
-        "Content-Type": "text/plain;charset=utf-8"
-      },
-      body: JSON.stringify(commande)
-    })
-    .then(() => {
-      alert("Votre commande a été transmise avec succès !");
-      // Optionnel : réinitialiser le formulaire
-      document.getElementById("formCommande").reset();
-    })
-    .catch((error) => {
-      console.error("Erreur lors de l'envoi :", error);
-      alert("Une erreur est survenue, veuillez réessayer.");
-    });
-  }
-</script>
+      <div class="form-group">
+        <label for="telephone">Numéro de téléphone :</label>
+        <input type="tel" id="telephone" placeholder="06XXXXXXXX" required>
+      </div>
+
+      <div class="form-group">
+        <label for="adresse">Adresse de livraison :</label>
+        <input type="text" id="adresse" placeholder="Ville / Adresse" required>
+      </div>
+
+      <button type="button" class="btn-submit" onclick="envoyerCommande()">Commander maintenant</button>
+    </form>
+  </div>
+
+  <script>
+    // ⚠️ REMPLACEZ CETTE URL PAR VOTRE URL DE DÉPLOIEMENT GOOGLE APPS SCRIPT
+    const SCRIPT_URL = "https://script.google.com/macros/s/VOTRE_ID_DEPLOIEMENT/exec";
+
+    function envoyerCommande() {
+      const nomInput = document.getElementById("nom").value.trim();
+      const telInput = document.getElementById("telephone").value.trim();
+      const adresseInput = document.getElementById("adresse").value.trim();
+
+      if (!nomInput || !telInput || !adresseInput) {
+        alert("Veuillez remplir tous les champs du formulaire.");
+        return;
+      }
+
+      const commande = {
+        nom: nomInput,
+        telephone: telInput,
+        adresse: adresseInput,
+        produit: "Nom du Produit", // Vous pouvez dynamiser cette valeur si nécessaire
+        prix: "2500 DA"            // Vous pouvez dynamiser cette valeur si nécessaire
+      };
+
+      fetch(SCRIPT_URL, {
+        method: "POST",
+        mode: "no-cors",
+        headers: {
+          "Content-Type": "text/plain;charset=utf-8"
+        },
+        body: JSON.stringify(commande)
+      })
+      .then(() => {
+        alert("Votre commande a été transmise avec succès !");
+        document.getElementById("formCommande").reset();
+      })
+      .catch((error) => {
+        console.error("Erreur lors de l'envoi :", error);
+        alert("Une erreur est survenue lors de l'envoi de la commande.");
+      });
+    }
+  </script>
+
+</body>
+</html>
