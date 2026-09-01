@@ -1,44 +1,56 @@
-<!doctype html>
-<html lang="fr">
-<head>
-  <meta charset="utf-8" />
-  <meta name="viewport" content="width=device-width,initial-scale=1" />
-  <title>Boutique Demo</title>
-  <link rel="stylesheet" href="styles.css" />
-</head>
-<body>
-  <header>
-    <h1>Boutique Demo</h1>
-    <div id="cart-count">Panier: <span>0</span></div>
-  </header>
+<!-- Exemple de Formulaire HTML -->
+<form id="formCommande">
+  <input type="text" id="nom" placeholder="Votre nom" required />
+  <input type="tel" id="telephone" placeholder="Numéro de téléphone" required />
+  <input type="text" id="adresse" placeholder="Adresse de livraison" required />
 
-  <main>
-    <section id="products"></section>
+  <!-- Bouton d'envoi -->
+  <button type="button" onclick="envoyerCommande()">Commander maintenant</button>
+</form>
 
-    <section id="cart">
-      <h2>Votre panier</h2>
-      <ul id="cart-items"></ul>
-      <div id="cart-total"></div>
-      <button id="checkout-btn">Passer au paiement</button>
-    </section>
+<!-- Code JavaScript -->
+<script>
+  // 1. Mettez votre lien Google Web App ici :
+  const SCRIPT_URL = "https://script.google.com/macros/s/VOTRE_ID_DEPLOIEMENT/exec";
 
-    <section id="checkout" class="hidden">
-      <h2>Checkout</h2>
-      <form id="checkout-form">
-        <label>Nom complet<input name="name" required /></label>
-        <label>Email<input name="email" type="email" required /></label>
-        <label>Téléphone<input name="phone" required /></label>
-        <label>Adresse<textarea name="address" required></textarea></label>
-        <button type="submit">Confirmer la commande</button>
-      </form>
-      <div id="checkout-status"></div>
-    </section>
-  </main>
+  function envoyerCommande() {
+    // Récupération des valeurs saisies par l'utilisateur
+    const nomClient = document.getElementById("nom").value;
+    const telClient = document.getElementById("telephone").value;
+    const adresseClient = document.getElementById("adresse").value;
 
-  <footer>
-    <small>Démo - héberger sur GitHub Pages</small>
-  </footer>
+    // Vérification simple que les champs ne sont pas vides
+    if (!nomClient || !telClient || !adresseClient) {
+      alert("Veuillez remplir tous les champs !");
+      return;
+    }
 
-  <script src="script.js"></script>
-</body>
-</html>
+    // Objet avec les données à envoyer
+    const commande = {
+      nom: nomClient,
+      telephone: telClient,
+      adresse: adresseClient,
+      produit: "Nom du produit", // Adaptez selon le produit sélectionné
+      prix: "2500 DA"            // Adaptez selon le prix du produit
+    };
+
+    // Envoi des données vers Google Sheets via Apps Script
+    fetch(SCRIPT_URL, {
+      method: "POST",
+      mode: "no-cors",
+      headers: {
+        "Content-Type": "text/plain;charset=utf-8"
+      },
+      body: JSON.stringify(commande)
+    })
+    .then(() => {
+      alert("Votre commande a été transmise avec succès !");
+      // Optionnel : réinitialiser le formulaire
+      document.getElementById("formCommande").reset();
+    })
+    .catch((error) => {
+      console.error("Erreur lors de l'envoi :", error);
+      alert("Une erreur est survenue, veuillez réessayer.");
+    });
+  }
+</script>
